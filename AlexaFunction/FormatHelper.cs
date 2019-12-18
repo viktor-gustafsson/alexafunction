@@ -17,7 +17,9 @@ namespace AlexaFunction
                 var departureTime = DateTime.Parse(departure);
                 var duration = departureTime - euTime;
                 result.Add(
-                    $"{departure}, in {duration.Minutes.ToString()} minutes and {duration.Seconds.ToString()} seconds");
+                    duration.Hours <= 0
+                        ? $"{departure}, in {duration.Minutes} minutes and {duration.Seconds} seconds"
+                        : $"{departure}, in {duration.Hours} hour, {duration.Minutes} minutes and {duration.Seconds} seconds");
             }
 
             return result;

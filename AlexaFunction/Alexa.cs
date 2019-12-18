@@ -16,8 +16,9 @@ namespace AlexaFunction
 {
     public static class Alexa
     {
-        private const string NextDeparturesCommand = "nextdepartures";
+        private const string NextNumberOfDeparturesCommand = "nextnumberofdepartures";
         private const string NextDepartureCommand = "nextdeparture";
+        private const string AllDepartureCommand = "alldepartures";
         private const string DeviationCommand = "deviation";
 
         [FunctionName("Alexa")]
@@ -42,8 +43,9 @@ namespace AlexaFunction
 
             if (!skillRequest.IsIntentRequest())
                 return new BadRequestResult();
-
-            skillResponse = ResponseBuilder.Tell(await HandleIntent(skillRequest));
+            
+            var response = await HandleIntent(skillRequest);
+            skillResponse = ResponseBuilder.Tell(response);
             skillResponse.Response.ShouldEndSession = true;
 
             return new OkObjectResult(skillResponse);
@@ -64,21 +66,19 @@ namespace AlexaFunction
                     return "Try asking for, next train departures.";
                 case "amazon.stopintent":
                     return "";
-                case "amazon.fallbackintent":
-                    return "I did not understand that";
             }
 
             var departureData = await apiService.GetDepartureData(apiService);
             var trainDepartureTimes = departureData.Trip
                 .Select(trips => trips.LegList.Leg.FirstOrDefault()?.Origin.time).ToList();
 
-            var timesToDeparture = FormatHelper.GetTimeToDeparture(trainDepartureTimes, FormatHelper.GetCurrentTime());
+            var timesToDeparture = FormatHelper.GetTimeToDeparture(trainDepartureTimes, FormatHelper.GetCurrentTime()).ToList();
 
             switch (intentName)
             {
-                case NextDeparturesCommand when intentRequest.Intent.Slots.Any():
+                case NextNumberOfDeparturesCommand when intentRequest.Intent.Slots.Count == 1:
                     return FormatHelper.GetOutputForNumberOfDepartures(intentRequest, timesToDeparture);
-                case NextDeparturesCommand:
+                case AllDepartureCommand:
                     return "Departure from Norrviken station are,".GetOutputForDepartures(timesToDeparture);
                 case NextDepartureCommand:
                     return $"Next train leaves Norrviken station at {timesToDeparture.FirstOrDefault()}";
