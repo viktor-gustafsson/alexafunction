@@ -10,5 +10,8 @@ namespace AlexaFunction
 
         public static bool IsIntentRequest(this SkillRequest skillRequest) =>
             skillRequest.GetRequestType() == typeof(IntentRequest);
+
+        public static bool IsSessionEndRequest(this SkillRequest skillRequest) =>
+            skillRequest.GetRequestType() == typeof(SessionEndedRequest);
     }
 }

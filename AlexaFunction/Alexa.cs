@@ -41,17 +41,24 @@ namespace AlexaFunction
                 return new OkObjectResult(skillResponse);
             }
 
+            if (skillRequest.IsSessionEndRequest())
+            {
+                skillResponse = ResponseBuilder.Tell("Bye");
+                skillResponse.Response.ShouldEndSession = true;
+                return new OkObjectResult(skillResponse);
+            }
+
             if (!skillRequest.IsIntentRequest())
                 return new BadRequestResult();
             
             var response = await HandleIntent(skillRequest);
-            skillResponse = ResponseBuilder.Tell(response);
-            skillResponse.Response.ShouldEndSession = true;
+            skillResponse = ResponseBuilder.Tell(response.Message);
+            skillResponse.Response.ShouldEndSession = response.KeepOpen;
 
             return new OkObjectResult(skillResponse);
         }
 
-        private static async Task<string> HandleIntent(SkillRequest skillRequest)
+        private static async Task<ConstructedResponse> HandleIntent(SkillRequest skillRequest)
         {
             var apiService = new ApiService();
 
@@ -61,11 +68,11 @@ namespace AlexaFunction
             switch (intentName)
             {
                 case "amazon.cancelintent":
-                    return "";
+                    return new ConstructedResponse("");
                 case "amazon.helpintent":
-                    return "Try asking for, next train departures.";
+                    return new ConstructedResponse("Try asking for, next train departures.", true);
                 case "amazon.stopintent":
-                    return "";
+                    return new ConstructedResponse("");
             }
 
             var departureData = await apiService.GetDepartureData(apiService);
@@ -77,15 +84,15 @@ namespace AlexaFunction
             switch (intentName)
             {
                 case NextNumberOfDeparturesCommand when intentRequest.Intent.Slots.Count == 1:
-                    return FormatHelper.GetOutputForNumberOfDepartures(intentRequest, timesToDeparture);
+                    return new ConstructedResponse(FormatHelper.GetOutputForNumberOfDepartures(intentRequest, timesToDeparture)); 
                 case AllDepartureCommand:
-                    return "Departure from Norrviken station are,".GetOutputForDepartures(timesToDeparture);
+                    return new ConstructedResponse("Departure from Norrviken station are,".GetOutputForDepartures(timesToDeparture));
                 case NextDepartureCommand:
-                    return $"Next train leaves Norrviken station at {timesToDeparture.FirstOrDefault()}";
+                    return new ConstructedResponse($"Next train leaves Norrviken station at {timesToDeparture.FirstOrDefault()}");
                 case DeviationCommand:
-                    return FormatHelper.GetDeviationOutput(departureData);
+                    return new ConstructedResponse(FormatHelper.GetDeviationOutput(departureData));
                 default:
-                    return "I did not understand that";
+                    return new ConstructedResponse("I did not understand that");
             }
         }
     }
