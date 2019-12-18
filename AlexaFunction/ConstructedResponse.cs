@@ -3,12 +3,12 @@
     public class ConstructedResponse
     {
         public string Message { get; }
-        public bool KeepOpen { get; }
+        public bool EndSession { get; }
 
-        public ConstructedResponse(string message, bool keepOpen = false)
+        public ConstructedResponse(string message, bool endSession = true)
         {
             Message = message;
-            KeepOpen = keepOpen;
+            EndSession = endSession;
         }
     }
 }

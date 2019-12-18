@@ -53,7 +53,7 @@ namespace AlexaFunction
             
             var response = await HandleIntent(skillRequest);
             skillResponse = ResponseBuilder.Tell(response.Message);
-            skillResponse.Response.ShouldEndSession = response.KeepOpen;
+            skillResponse.Response.ShouldEndSession = response.EndSession;
 
             return new OkObjectResult(skillResponse);
         }
@@ -68,11 +68,11 @@ namespace AlexaFunction
             switch (intentName)
             {
                 case "amazon.cancelintent":
-                    return new ConstructedResponse("");
+                    return new ConstructedResponse("Bye");
                 case "amazon.helpintent":
-                    return new ConstructedResponse("Try asking for, next train departures.", true);
+                    return new ConstructedResponse("Try asking for, next train departure.", false);
                 case "amazon.stopintent":
-                    return new ConstructedResponse("");
+                    return new ConstructedResponse("Bye");
             }
 
             var departureData = await apiService.GetDepartureData(apiService);
