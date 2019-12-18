@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Alexa.NET;
@@ -32,23 +31,21 @@ namespace AlexaFunction
 
             if (!await skillRequest.ValidateRequestAsync(req, log))
                 return new BadRequestResult();
-            
-            var requestType = skillRequest.GetRequestType();
 
             SkillResponse skillResponse;
-            if (requestType == typeof(LaunchRequest))
+            if (skillRequest.IsLaunchRequest())
             {
                 skillResponse = ResponseBuilder.Tell(FormatHelper.GetOutputForSkillLaunch());
                 skillResponse.Response.ShouldEndSession = false;
                 return new OkObjectResult(skillResponse);
             }
 
-            if (requestType != typeof(IntentRequest)) 
+            if (!skillRequest.IsIntentRequest())
                 return new BadRequestResult();
-            
+
             skillResponse = ResponseBuilder.Tell(await HandleIntent(skillRequest));
             skillResponse.Response.ShouldEndSession = true;
-                    
+
             return new OkObjectResult(skillResponse);
         }
 
