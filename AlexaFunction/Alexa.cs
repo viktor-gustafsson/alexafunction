@@ -27,8 +27,6 @@ namespace AlexaFunction
             HttpRequest req,
             ILogger log)
         {
-            var output = string.Empty;
-
             var json = await req.ReadAsStringAsync();
             var skillRequest = JsonConvert.DeserializeObject<SkillRequest>(json);
 
@@ -37,7 +35,7 @@ namespace AlexaFunction
             
             var requestType = skillRequest.GetRequestType();
 
-            SkillResponse skillResponse = null;
+            SkillResponse skillResponse;
             if (requestType == typeof(LaunchRequest))
             {
                 skillResponse = ResponseBuilder.Tell(FormatHelper.GetOutputForSkillLaunch());
@@ -45,12 +43,12 @@ namespace AlexaFunction
                 return new OkObjectResult(skillResponse);
             }
 
-            if (requestType == typeof(IntentRequest))
-                output = await HandleIntent(skillRequest);
-
-            skillResponse = ResponseBuilder.Tell(output);
-            skillResponse.Response.ShouldEndSession = output == string.Empty;
-
+            if (requestType != typeof(IntentRequest)) 
+                return new BadRequestResult();
+            
+            skillResponse = ResponseBuilder.Tell(await HandleIntent(skillRequest));
+            skillResponse.Response.ShouldEndSession = true;
+                    
             return new OkObjectResult(skillResponse);
         }
 
