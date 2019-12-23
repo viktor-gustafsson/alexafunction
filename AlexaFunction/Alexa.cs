@@ -93,11 +93,11 @@ namespace AlexaFunction
             switch (intentName)
             {
                 case NextNumberOfDeparturesCommand when intentRequest.Intent.Slots.Count == 1:
-                    return new ConstructedResponse(FormatHelper.GetOutputForNumberOfDepartures(intentRequest, timesToDeparture)); 
+                    return new ConstructedResponse(FormatHelper.GetOutputForNumberOfDepartures(intentRequest, timesToDeparture, userStationData)); 
                 case AllDepartureCommand:
-                    return new ConstructedResponse("Departure from Norrviken station are,".GetOutputForDepartures(timesToDeparture));
+                    return new ConstructedResponse($"Departure from {userStationData.FromStation} are,".GetOutputForDepartures(timesToDeparture));
                 case NextDepartureCommand:
-                    return new ConstructedResponse($"Next train leaves Norrviken station at {timesToDeparture.FirstOrDefault()}");
+                    return new ConstructedResponse($"Next train leaves {userStationData.FromStation} at {timesToDeparture.FirstOrDefault()}");
                 case DeviationCommand:
                     return new ConstructedResponse(FormatHelper.GetDeviationOutput(departureData));
                 default:

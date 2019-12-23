@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Alexa.NET.Request.Type;
+using AlexaFunction.DAL;
 using AlexaFunction.Models;
 
 namespace AlexaFunction
@@ -35,7 +36,7 @@ namespace AlexaFunction
             departures.Aggregate(s, (current, departure) => current + $", {departure}");
         
         public static string GetOutputForNumberOfDepartures(IntentRequest intentRequest,
-            IEnumerable<string> timeDifference)
+            IEnumerable<string> timeDifference, UserStationData userStationData)
         {
             var numberAsString = intentRequest.Intent.Slots.FirstOrDefault().Value.Value;
             var numberAsInt = int.Parse(numberAsString);
@@ -44,7 +45,7 @@ namespace AlexaFunction
 
             var subSetOfDepartures = timeDifference.Take(numberAsInt);
             return
-                $"Next {numberAsString} departures from Norrviken station are,".GetOutputForDepartures(
+                $"Next {numberAsString} departures from {userStationData.FromStation} are,".GetOutputForDepartures(
                     subSetOfDepartures);
         }
         
