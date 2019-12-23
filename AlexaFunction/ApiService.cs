@@ -19,8 +19,7 @@ namespace AlexaFunction
 
         public async Task<RootObject> GetDepartureData(ApiService apiService, UserStationData userStationData)
         {
-            const int bufferTimeInMinutes = 15;
-            var searchTime = FormatHelper.GetCurrentTime().AddMinutes(bufferTimeInMinutes).ToString("HH:mm");
+            var searchTime = FormatHelper.GetCurrentTime().AddMinutes(userStationData.DepartureBuffer).ToString("HH:mm");
             var apiUrl =
                 $"https://api.sl.se/api2/TravelplannerV3_1/trip.JSON?key={_departureApiKey}&lang=en&originExtId={userStationData.FromStation}&destExtId={userStationData.ToStation}&time={searchTime}";
             return await apiService.GetTrainDepartures(apiUrl);

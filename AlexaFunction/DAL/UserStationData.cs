@@ -10,5 +10,6 @@ namespace AlexaFunction.DAL
         public string AmazonUserId { get; set; }
         public string FromStation { get; set; }
         public string ToStation { get; set; }
+        public int DepartureBuffer { get; set; }
     }
 }
