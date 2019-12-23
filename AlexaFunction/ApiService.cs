@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AlexaFunction.DAL;
 using AlexaFunction.Models;
 using Newtonsoft.Json;
 
@@ -16,12 +17,12 @@ namespace AlexaFunction
             _httpClient = new HttpClient();
         }
 
-        public async Task<RootObject> GetDepartureData(ApiService apiService)
+        public async Task<RootObject> GetDepartureData(ApiService apiService, UserStationData userStationData)
         {
             const int bufferTimeInMinutes = 15;
             var searchTime = FormatHelper.GetCurrentTime().AddMinutes(bufferTimeInMinutes).ToString("HH:mm");
             var apiUrl =
-                $"https://api.sl.se/api2/TravelplannerV3_1/trip.JSON?key={_departureApiKey}&lang=en&originExtId=Norrviken (Sollentuna)&destExtId=Odenplan (Stockholm)&time={searchTime}";
+                $"https://api.sl.se/api2/TravelplannerV3_1/trip.JSON?key={_departureApiKey}&lang=en&originExtId={userStationData.FromStation}&destExtId={userStationData.ToStation}&time={searchTime}";
             return await apiService.GetTrainDepartures(apiUrl);
         }
         

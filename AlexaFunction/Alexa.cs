@@ -5,6 +5,7 @@ using Alexa.NET.Request;
 using Alexa.NET.Request.Type;
 using Alexa.NET.Response;
 using Alexa.NET.Security.Functions;
+using AlexaFunction.DAL;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
@@ -20,6 +21,8 @@ namespace AlexaFunction
         private const string NextDepartureCommand = "nextdeparture";
         private const string AllDepartureCommand = "alldepartures";
         private const string DeviationCommand = "deviation";
+        private static UserStationDataRepository _userStationDataRepository;
+        private static string _userId;
 
         [FunctionName("Alexa")]
         public static async Task<IActionResult> Run(
@@ -29,9 +32,15 @@ namespace AlexaFunction
         {
             var json = await req.ReadAsStringAsync();
             var skillRequest = JsonConvert.DeserializeObject<SkillRequest>(json);
+            
+            _userId = skillRequest.Context.System.User.UserId;
 
             if (!await skillRequest.ValidateRequestAsync(req, log))
                 return new BadRequestResult();
+            
+            _userStationDataRepository = new UserStationDataRepository();
+            var userStationData =
+                await _userStationDataRepository.InsertUserIfNotExists(_userId);
 
             SkillResponse skillResponse;
             if (skillRequest.IsLaunchRequest())
@@ -51,17 +60,17 @@ namespace AlexaFunction
             if (!skillRequest.IsIntentRequest())
                 return new BadRequestResult();
             
-            var response = await HandleIntent(skillRequest);
+            var response = await HandleIntent(skillRequest, userStationData);
             skillResponse = ResponseBuilder.Tell(response.Message);
             skillResponse.Response.ShouldEndSession = response.EndSession;
 
             return new OkObjectResult(skillResponse);
         }
 
-        private static async Task<ConstructedResponse> HandleIntent(SkillRequest skillRequest)
+        private static async Task<ConstructedResponse> HandleIntent(SkillRequest skillRequest, UserStationData userStationData)
         {
             var apiService = new ApiService();
-
+            
             var intentRequest = skillRequest.Request as IntentRequest;
             var intentName = intentRequest?.Intent.Name.ToLowerInvariant();
 
@@ -75,7 +84,7 @@ namespace AlexaFunction
                     return new ConstructedResponse("Bye");
             }
 
-            var departureData = await apiService.GetDepartureData(apiService);
+            var departureData = await apiService.GetDepartureData(apiService, userStationData);
             var trainDepartureTimes = departureData.Trip
                 .Select(trips => trips.LegList.Leg.FirstOrDefault()?.Origin.time).ToList();
 
