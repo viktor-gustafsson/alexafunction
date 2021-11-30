@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
+﻿namespace AlexaFunction.Models;
 
-namespace AlexaFunction.Models
+public class TariffResult
 {
-    public class TariffResult
-    {
-        public List<FareSetItem> fareSetItem { get; set; }
-    }
+    public List<FareSetItem> fareSetItem { get; set; }
 }
