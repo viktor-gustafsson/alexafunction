@@ -1,19 +1,16 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Alexa.NET;
 using Alexa.NET.Request;
 using Alexa.NET.Request.Type;
 using Alexa.NET.Response;
 using Alexa.NET.Security.Functions;
 using AlexaFunction.DAL;
-using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
 namespace AlexaFunction
 {
