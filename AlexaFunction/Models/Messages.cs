@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
+﻿namespace AlexaFunction.Models;
 
-namespace AlexaFunction.Models
+public class Messages
 {
-    public class Messages
-    {
-        public List<Message> Message { get; set; }
-    }
+    public List<Message> Message { get; set; }
 }

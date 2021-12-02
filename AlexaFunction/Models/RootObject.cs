@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
+﻿namespace AlexaFunction.Models;
 
-namespace AlexaFunction.Models
-{
-    public class RootObject
+public class RootObject
 {
     public List<Trip> Trip { get; set; }
     public string scrB { get; set; }
@@ -10,5 +8,4 @@ namespace AlexaFunction.Models
     public string serverVersion { get; set; }
     public string dialectVersion { get; set; }
     public string requestId { get; set; }
-}
 }

@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
+﻿namespace AlexaFunction.Models;
 
-namespace AlexaFunction.Models
+public class LegList
 {
-    public class LegList
-    {
-        public List<Leg> Leg { get; set; }
-    }
+    public List<Leg> Leg { get; set; }
 }

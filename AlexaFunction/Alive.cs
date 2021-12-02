@@ -1,16 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 
-namespace AlexaFunction
+namespace AlexaFunction;
+
+public static class Alive
 {
-    public static class Alive
+    [FunctionName("Alive")]
+    public static async Task RunAsync([TimerTrigger("0 * * * * *")] TimerInfo myTimer, ILogger log)
     {
-        [FunctionName("Alive")]
-        public static async Task RunAsync([TimerTrigger("0 * * * * *")] TimerInfo myTimer, ILogger log)
-        {
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.UtcNow}");
-        }
+        log.LogInformation($"C# Timer trigger function executed at: {DateTime.UtcNow}");
     }
 }

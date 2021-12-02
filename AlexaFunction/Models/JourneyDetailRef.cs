@@ -1,7 +1,6 @@
-﻿namespace AlexaFunction.Models
+﻿namespace AlexaFunction.Models;
+
+public class JourneyDetailRef
 {
-    public class JourneyDetailRef
-    {
-        public string @ref { get; set; }
-    }
+    public string @ref { get; set; }
 }
