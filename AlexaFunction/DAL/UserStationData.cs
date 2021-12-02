@@ -1,15 +1,13 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using Google.Cloud.Firestore;
 
 namespace AlexaFunction.DAL
 {
+    [FirestoreData]
     public class UserStationData
     {
-        [BsonId]
-        public ObjectId Id { get; set; }
-        public string AmazonUserId { get; set; }
-        public string FromStation { get; set; }
-        public string ToStation { get; set; }
-        public int DepartureBuffer { get; set; }
+        [FirestoreProperty] public string AmazonUserId { get; set; }
+        [FirestoreProperty] public string FromStation { get; set; }
+        [FirestoreProperty] public string ToStation { get; set; }
+        [FirestoreProperty] public int DepartureBuffer { get; set; }
     }
 }

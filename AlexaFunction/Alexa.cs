@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Alexa.NET;
@@ -6,6 +7,7 @@ using Alexa.NET.Request.Type;
 using Alexa.NET.Response;
 using Alexa.NET.Security.Functions;
 using AlexaFunction.DAL;
+using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
@@ -21,15 +23,19 @@ namespace AlexaFunction
         private const string NextDepartureCommand = "nextdeparture";
         private const string AllDepartureCommand = "alldepartures";
         private const string DeviationCommand = "deviation";
-        private static UserStationDataRepository _userStationDataRepository;
+        private static FirestoreUserData _userStationDataRepository;
         private static string _userId;
 
         [FunctionName("Alexa")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
+            ExecutionContext context,
             ILogger log)
         {
+            var combine = System.IO.Path.Combine(context.FunctionDirectory, "..\\alexaskill-97042-5f96cc3da2d1.json");
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", combine);
+            
             var json = await req.ReadAsStringAsync();
             var skillRequest = JsonConvert.DeserializeObject<SkillRequest>(json);
             
@@ -38,9 +44,9 @@ namespace AlexaFunction
             if (!await skillRequest.ValidateRequestAsync(req, log))
                 return new BadRequestResult();
             
-            _userStationDataRepository = new UserStationDataRepository();
+            _userStationDataRepository = new FirestoreUserData();
             var userStationData =
-                await _userStationDataRepository.InsertUserIfNotExists(_userId);
+                await _userStationDataRepository.GetData(_userId);
 
             SkillResponse skillResponse;
             if (skillRequest.IsLaunchRequest())
