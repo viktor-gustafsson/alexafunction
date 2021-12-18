@@ -20,7 +20,7 @@ namespace AlexaFunction
         private const string NextDepartureCommand = "nextdeparture";
         private const string AllDepartureCommand = "alldepartures";
         private const string DeviationCommand = "deviation";
-        private static FirestoreUserData _userStationDataRepository;
+        private static FireStore _fireStore;
         private static string _userId;
 
         [FunctionName("Alexa")]
@@ -41,9 +41,9 @@ namespace AlexaFunction
             if (!await skillRequest.ValidateRequestAsync(req, log))
                 return new BadRequestResult();
             
-            _userStationDataRepository = new FirestoreUserData();
+            _fireStore = new FireStore();
             var userStationData =
-                await _userStationDataRepository.GetData(_userId);
+                await _fireStore.GetUserStationData(_userId);
 
             SkillResponse skillResponse;
             if (skillRequest.IsLaunchRequest())
@@ -72,8 +72,6 @@ namespace AlexaFunction
 
         private static async Task<ConstructedResponse> HandleIntent(SkillRequest skillRequest, UserStationData userStationData)
         {
-            var apiService = new ApiService();
-            
             var intentRequest = skillRequest.Request as IntentRequest;
             var intentName = intentRequest?.Intent.Name.ToLowerInvariant();
 
@@ -87,25 +85,43 @@ namespace AlexaFunction
                     return new ConstructedResponse("Bye");
             }
 
+            return intentName switch
+            {
+                NextNumberOfDeparturesCommand when intentRequest.Intent.Slots.Count == 1 => new ConstructedResponse(
+                    FormatHelper.GetOutputForNumberOfDepartures(intentRequest, await GetDepartureTimes(userStationData),
+                        userStationData)),
+                AllDepartureCommand => new ConstructedResponse(
+                    $"Departure from {userStationData.FromStation} are,".GetOutputForDepartures(
+                        await GetDepartureTimes(userStationData))),
+                NextDepartureCommand => new ConstructedResponse(
+                    $"Next train leaves {userStationData.FromStation} at {(await GetDepartureTimes(userStationData)).FirstOrDefault()}"),
+                DeviationCommand => new ConstructedResponse(await GetDeviatonInformation(userStationData)),
+                _ => new ConstructedResponse("I did not understand that")
+            };
+        }
+
+        private static async Task<string> GetDeviatonInformation(UserStationData userStationData)
+        {
+            var lastDeviationData = await _fireStore.GetLastDeviationData();
+            if (lastDeviationData.Time.AddMinutes(30) < DateTime.UtcNow) 
+                return lastDeviationData.Deviation;
+            
+            var apiService = new ApiService();
+            var departureData = await apiService.GetDepartureData(apiService, userStationData);
+            var deviationOutput = FormatHelper.GetDeviationOutput(departureData);
+            await _fireStore.WriteDeviationData(deviationOutput);
+            
+            return deviationOutput;
+        }
+        
+        private static async Task<List<string>> GetDepartureTimes(UserStationData userStationData)
+        {
+            var apiService = new ApiService();
             var departureData = await apiService.GetDepartureData(apiService, userStationData);
             var trainDepartureTimes = departureData.Trip
                 .Select(trips => trips.LegList.Leg.FirstOrDefault()?.Origin.time).ToList();
 
-            var timesToDeparture = FormatHelper.GetTimeToDeparture(trainDepartureTimes, FormatHelper.GetCurrentTime()).ToList();
-
-            switch (intentName)
-            {
-                case NextNumberOfDeparturesCommand when intentRequest.Intent.Slots.Count == 1:
-                    return new ConstructedResponse(FormatHelper.GetOutputForNumberOfDepartures(intentRequest, timesToDeparture, userStationData)); 
-                case AllDepartureCommand:
-                    return new ConstructedResponse($"Departure from {userStationData.FromStation} are,".GetOutputForDepartures(timesToDeparture));
-                case NextDepartureCommand:
-                    return new ConstructedResponse($"Next train leaves {userStationData.FromStation} at {timesToDeparture.FirstOrDefault()}");
-                case DeviationCommand:
-                    return new ConstructedResponse(FormatHelper.GetDeviationOutput(departureData));
-                default:
-                    return new ConstructedResponse("I did not understand that");
-            }
+            return FormatHelper.GetTimeToDeparture(trainDepartureTimes, FormatHelper.GetCurrentTime()).ToList();
         }
     }
 }
